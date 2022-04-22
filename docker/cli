@@ -1,0 +1,98 @@
+#!/bin/bash
+if ! [ -x "$(command -v docker)" ]; then
+  echo 'Error: docker is not installed.' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  echo 'Error: docker-compose is not installed.' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v dialog)" ]; then
+  echo 'Error: dialog is not installed.' >&2
+  exit 1
+fi
+
+if [[ $OS == "Darwin" ]]
+then
+  if ! [ -x "$(command -v docker-sync)" ]; then
+    echo 'Error: docker-sync is not installed.' >&2
+    exit 1
+  fi
+fi
+
+HEIGHT=50
+WIDTH=150
+CHOICE_HEIGHT=20
+TITLE="INTERACTIVE CONSOLE"
+MENU="Choisissez l'une des options suivantes :"
+
+if [ ! -f ./.installed ]
+  then
+    OPTIONS=(1 "DOCKER - INSTALLER LE PROJET")
+
+    CHOICE=$(dialog --clear \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
+
+    clear
+
+    case $CHOICE in
+            1)
+                bash ./docker-interaction.sh setup
+                ;;
+    esac
+  else
+    OPTIONS=(1 "MAGENTO - COMPOSER INSTALL"
+             2 "DOCKER  - DEMARRER LES CONTENEURS"
+             3 "DOCKER  - STOPPER LES CONTENEURS"
+             4 "DOCKER  - REDEMARRER LES CONTENEURS"
+             5 "DOCKER  - RECREER LES CONTENEURS"
+             6 "DOCKER  - CLI (MFLASQUIN)"
+             7 "DOCKER  - CLI (ROOT)"
+             8 "DOCKER  - WEB (MFLASQUIN)"
+             9 "DOCKER  - WEB (ROOT)")
+
+    CHOICE=$(dialog --clear \
+                    --title "$TITLE" \
+                    --menu "$MENU" \
+                    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
+
+    clear
+
+    case $CHOICE in
+            1)
+                bash ./docker-interaction.sh composer install
+                ;;
+            2)
+                bash ./docker-interaction.sh up
+                ;;
+            3)
+                bash ./docker-interaction.sh stop
+                ;;
+            4)
+                bash ./docker-interaction.sh fig restart
+                ;;
+            5)
+                docker-compose pull && bash ./docker-interaction.sh fig stop &&  bash ./docker-interaction.sh fig up -d --force-recreate
+                ;;
+            6)
+                bash ./docker-interaction.sh fig exec --user mflasquin cli bash
+                ;;
+            7)
+                bash ./docker-interaction.sh fig exec cli bash
+                ;;
+            8)
+                bash ./docker-interaction.sh fig exec --user mflasquin web bash
+                ;;
+            9)
+                bash ./docker-interaction.sh fig exec web bash
+                ;;
+    esac
+fi

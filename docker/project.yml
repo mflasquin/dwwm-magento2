@@ -1,0 +1,6 @@
+project:
+  name: dwwm_magento2
+  host: dwwm.magento2.local
+  tools: tools.dwwm.magento2.local
+  ip: "127.0.0.1"
+  hostfile: /etc/hosts
